@@ -17,7 +17,7 @@ export async function POST(req) {
         };
 
         const qrData = `${ticketId}`;
-        const qrImageUrl = await QRCode.toDataURL(qrData);
+        const qrImageBuffer = await QRCode.toBuffer(qrData);
 
         const newTicket = await Ticket.create({
             ticketId,
@@ -26,7 +26,7 @@ export async function POST(req) {
             event: eventDetails,
         });
 
-        await sendTicketEmail({ email, name, qrImageUrl, event: eventDetails });
+        await sendTicketEmail({ email, name, qrImageBuffer, event: eventDetails });
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (error) {
