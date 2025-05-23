@@ -11,9 +11,9 @@ export async function POST(req) {
 
         const ticketId = uuidv4();
         const eventDetails = {
-            name: 'Tech Conference 2025',
-            date: '2025-09-15',
-            time: '10:00 AM',
+            name: 'Dr. Bhangu’s Herbal Healing Conclave 2025',
+            date: '04-June-2025',
+            time: '03:00 PM',
         };
 
         const qrData = `${ticketId}`;

@@ -26,7 +26,7 @@ export default function TicketForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 p-4 max-w-md mx-auto">
-            <h2 className="text-xl font-semibold">Book Your Free Ticket</h2>
+            <h2 className="text-xl font-semibold">Book Your Ticket Now</h2>
             <input
                 type="text"
                 placeholder="Full Name"
@@ -35,6 +35,7 @@ export default function TicketForm() {
                 className="w-full p-2 border rounded"
                 required
             />
+            <br />
             <input
                 type="email"
                 placeholder="Email Address"
@@ -43,6 +44,7 @@ export default function TicketForm() {
                 className="w-full p-2 border rounded"
                 required
             />
+            <br />
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
                 Get Ticket
             </button>
