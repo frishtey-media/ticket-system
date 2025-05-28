@@ -9,7 +9,8 @@ const TicketSchema = new mongoose.Schema({
         date: String,
         time: String,
     },
-    isUsed: { type: Boolean, default: false }
+    isUsed: { type: Boolean, default: false },
+    payment_id: String
 }, {
     timestamps: true
 });

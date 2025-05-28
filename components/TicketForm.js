@@ -1,27 +1,81 @@
 'use client';
-import { useState } from 'react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 export default function TicketForm() {
     const [form, setForm] = useState({ name: '', email: '' });
     const [message, setMessage] = useState('');
+    const currency = "INR";
+    const amount = 300;
+
+    useEffect(() => {
+        // Dynamically load Razorpay script
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script); // Cleanup on component unmount
+        };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('Processing...');
 
-        const res = await fetch('/api/buy', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(form)
-        });
+        await axios.post('/api/create-order', { currency, amount })
+            .then(async (response) => {
+                const options = {
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Add Razorpay Key ID in .env
+                    amount: response.data.order.amount,
+                    currency: response.data.order.currency,
+                    name: process.env.NEXT_PUBLIC_RAZORPAY_PAYEE_NAME, // Add Razorpay Payee Name in .env
+                    description: 'Purchase Ticket',
+                    order_id: response.data.order.id,
+                    handler: async function (response) {
+                        const { razorpay_payment_id } = response;
 
-        const data = await res.json();
-        if (data.success) {
-            setMessage('Ticket sent to your email!');
-            setForm({ name: '', email: '' });
-        } else {
-            setMessage('Error sending ticket. Try again.');
-        }
+                        try {
+                            const res = await fetch('/api/buy', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: form.name,
+                                    email: form.email,
+                                    payment_id: razorpay_payment_id
+                                })
+                            });
+
+                            const ticket = await res.json();
+                            if (ticket.success) {
+                                setMessage('Ticket sent to your email!');
+                                setForm({ name: '', email: '' });
+                            } else {
+                                setMessage('Error sending ticket. Try again.');
+                            }
+                        }
+                        catch (error) {
+                            console.error(error);
+                            setMessage('Error creating ticket.');
+                        }
+                    },
+                    prefill: {
+                        name: form.name,
+                        email: form.email,
+                    },
+                    theme: {
+                        color: '#5b2f14',
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.log(error);
+                alert('Something went wrong. Please try again.');
+            })
     };
 
     return (
@@ -43,6 +97,15 @@ export default function TicketForm() {
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 className="w-full p-2 border rounded"
                 required
+            />
+            <br />
+            <input
+                type="number"
+                placeholder="Amount"
+                value={amount}
+                className="w-full p-2 border rounded"
+                required
+                disabled
             />
             <br />
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">

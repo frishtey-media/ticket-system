@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 
 export async function POST(req) {
     try {
-        const { name, email } = await req.json();
+        const { name, email, payment_id } = await req.json();
         await connectToDatabase();
 
         const ticketId = uuidv4();
@@ -24,6 +24,7 @@ export async function POST(req) {
             name,
             email,
             event: eventDetails,
+            payment_id
         });
 
         await sendTicketEmail({ email, name, qrImageBuffer, event: eventDetails });
