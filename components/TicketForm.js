@@ -3,10 +3,10 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 export default function TicketForm() {
-    const [form, setForm] = useState({ name: '', email: '' });
+    const [form, setForm] = useState({ name: '', email: '', quantity: 1 });
     const [message, setMessage] = useState('');
     const currency = "INR";
-    const amount = 300;
+    const [amount, setAmount] = useState(300);
 
     useEffect(() => {
         // Dynamically load Razorpay script
@@ -20,9 +20,14 @@ export default function TicketForm() {
         };
     }, []);
 
+    function handleQuantityChange(e) {
+        let quantity = e.target.value;
+        setForm({ ...form, quantity: e.target.value });
+        setAmount(quantity * 300);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('Processing...');
 
         await axios.post('/api/create-order', { currency, amount })
             .then(async (response) => {
@@ -37,20 +42,23 @@ export default function TicketForm() {
                         const { razorpay_payment_id } = response;
 
                         try {
+                            setMessage('Processing...');
+
                             const res = await fetch('/api/buy', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     name: form.name,
                                     email: form.email,
-                                    payment_id: razorpay_payment_id
+                                    payment_id: razorpay_payment_id,
+                                    quantity: form.quantity
                                 })
                             });
 
                             const ticket = await res.json();
                             if (ticket.success) {
                                 setMessage('Ticket sent to your email!');
-                                setForm({ name: '', email: '' });
+                                setForm({ name: '', email: '', quantity: 1 });
                             } else {
                                 setMessage('Error sending ticket. Try again.');
                             }
@@ -107,9 +115,17 @@ export default function TicketForm() {
                 required
                 disabled
             />
+            <input
+                type='number'
+                placeholder='Quantity'
+                value={form.quantity}
+                onChange={handleQuantityChange}
+                className="w-full p-2 border rounded"
+                required
+            />
             <br />
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-                Get Ticket
+                Get Tickets
             </button>
             {message && <p className="mt-2 text-sm">{message}</p>}
         </form>

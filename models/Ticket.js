@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
 
 const TicketSchema = new mongoose.Schema({
-    ticketId: { type: String, unique: true },
+    tickets: [
+        {
+            ticketId: { type: String, required: true },
+            isUsed: { type: Boolean, default: false }
+        }
+    ],
     name: String,
     email: String,
     event: {
@@ -9,7 +14,6 @@ const TicketSchema = new mongoose.Schema({
         date: String,
         time: String,
     },
-    isUsed: { type: Boolean, default: false },
     payment_id: String
 }, {
     timestamps: true
